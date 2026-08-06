@@ -296,4 +296,63 @@ public class AccountModule : InteractionModuleBase<SocketInteractionContext>
             x.Content = "✅ Hoàn thành";
         });
     }
+    [SlashCommand("removeimport", "Xóa nhiều tài khoản từ file txt")]
+    public async Task RemoveImport(IAttachment file)
+    {
+        await DeferAsync(ephemeral: true);
+
+        if (!file.Filename.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+        {
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = "❌ Chỉ hỗ trợ file .txt";
+            });
+
+            return;
+        }
+
+        await Context.Channel.SendMessageAsync("🚀 Bắt đầu xóa tài khoản...");
+
+        using var httpClient = new HttpClient();
+
+        var content = await httpClient.GetStringAsync(file.Url);
+
+        var uidList = content
+            .Split(new[] { '\r', '\n', ',', ' ' },
+                StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => !x.StartsWith("#"))
+            .Distinct();
+
+        int success = 0;
+        int failed = 0;
+
+        foreach (var uid in uidList)
+        {
+            bool deleted = await _accountService.DeleteAsync(uid);
+
+            if (deleted)
+            {
+                success++;
+                await Context.Channel.SendMessageAsync(
+                    $"🗑️ Đã xóa UID {uid}");
+            }
+            else
+            {
+                failed++;
+                await Context.Channel.SendMessageAsync(
+                    $"❌ Không tìm thấy UID {uid}");
+            }
+        }
+
+        await Context.Channel.SendMessageAsync(
+            $"🏁 Hoàn thành.\n" +
+            $"✅ Đã xóa: {success}\n" +
+            $"❌ Không tìm thấy: {failed}");
+
+        await ModifyOriginalResponseAsync(x =>
+        {
+            x.Content = "✅ Hoàn thành";
+        });
+    }
 }
