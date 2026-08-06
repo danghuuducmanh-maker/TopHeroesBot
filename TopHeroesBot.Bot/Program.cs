@@ -2,8 +2,9 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using TopHeroesBot.Bot.Services;
+using TopHeroesBot.Infrastructure.Data;
 using TopHeroesBot.Infrastructure.Extensions;
-
+using Microsoft.EntityFrameworkCore;
 var builder = Host.CreateApplicationBuilder(args);
 
 // Infrastructure
@@ -27,5 +28,9 @@ builder.Services.AddHostedService<DiscordBotService>();
 builder.Services.AddHostedService<SchedulerService>();
 
 var host = builder.Build();
-
+using (var scope = host.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 host.Run();
