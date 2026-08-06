@@ -20,6 +20,7 @@ Job chỉ là Queue, không lưu History.
 
 ## ADR-006
 Chỉ Worker được phép gọi Playwright.
+gg
 
 ## ADR-007
 Một UID chỉ có một Automation Session tại một thời điểm.
