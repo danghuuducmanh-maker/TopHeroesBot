@@ -66,5 +66,6 @@ public class ScheduleService : IScheduleService
     public async Task RunNowAsync()
     {
         await _accountService.RunDailyAsync();
+        
     }
 }

@@ -240,7 +240,7 @@ public class AccountService : IAccountService
                 };
 
                 await ClaimDailyAndNotify(context);
-
+                await ClaimGoldAndNotify(context);
             }
             catch (Exception)
             {
