@@ -17,17 +17,19 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("add", "Thêm GiftCode")]
     public async Task Add(string code)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
 
-        var message = await _giftService.AddAsync(code);
+        var result = await _giftService.AddAsync(
+            code,
+            async message =>
+            {
+                await Context.Channel.SendMessageAsync(message);
+            });
 
-        var embed = new EmbedBuilder()
-            .WithTitle("🎁 Kết quả thêm GiftCode")
-            .WithColor(Color.Green)
-            .WithDescription(message)
-            .Build();
-
-        await FollowupAsync(embed: embed);
+        await ModifyOriginalResponseAsync(x =>
+        {
+            x.Content = "✅ Hoàn thành";
+        });
     }
 
     [SlashCommand("list", "Danh sách GiftCode")]

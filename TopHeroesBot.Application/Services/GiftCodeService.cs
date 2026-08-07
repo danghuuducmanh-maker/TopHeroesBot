@@ -14,8 +14,89 @@ public class GiftCodeService : IGiftCodeService
     {
         _giftRepository = giftRepository;
     }
+    private async Task RedeemGiftForAccountAsync(
+    Account account,
+    string code,
+    Func<string, Task>? notify)
+    {
+        await _topHeroesClient.CreatePageAsync();
 
-    public async Task<string> AddAsync(string code)
+        try
+        {
+            await _topHeroesClient.LoginAsync(account.Uid);
+
+            if (notify != null)
+            {
+                await notify(
+                    $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): Đăng nhập thành công.");
+            }
+
+            var result = await _topHeroesClient.RedeemGiftAsync(code);
+
+            switch (result.ResultCode)
+            {
+                case 1:
+
+                    if (notify != null)
+                    {
+                        await notify(
+                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Thành công.");
+                    }
+
+                    break;
+
+                case 80006:
+
+                    if (notify != null)
+                    {
+                        await notify(
+                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Đã nhận.");
+                    }
+
+                    break;
+
+                case 80004:
+                case 10015:
+                case 10017:
+
+                    await _giftRepository.DeleteAsync(code);
+
+                    if (notify != null)
+                    {
+                        await notify(
+                            $"[{DateTime.Now:HH:mm:ss}] {code}: GiftCode không hợp lệ. Đã xóa khỏi danh sách.");
+                    }
+
+                    break;
+
+                default:
+
+                    if (notify != null)
+                    {
+                        await notify(
+                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Lỗi {result.ResultCode}");
+                    }
+
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            if (notify != null)
+            {
+                await notify(
+                    $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {ex.Message}");
+            }
+        }
+        finally
+        {
+            await _topHeroesClient.CloseAsync();
+        }
+    }
+
+    public async Task<string> AddAsync(
+    string code,
+    Func<string, Task>? notify = null)
     {
         code = code.Trim().ToUpper();
 
@@ -31,57 +112,16 @@ public class GiftCodeService : IGiftCodeService
 
         var accounts = await _accountRepository.GetAllAsync();
 
-        var message = $"🎁 **GiftCode:** `{code}`\n\n";
-
         foreach (var account in accounts)
         {
-            await _topHeroesClient.CreatePageAsync();
-
-            try
-            {
-                await _topHeroesClient.LoginAsync(account.Uid);
-
-                var result = await _topHeroesClient.RedeemGiftAsync(code);
-
-                switch (result.ResultCode)
-                {
-                    case 1:
-                        message += $"✅ **{account.Name}** (`{account.Uid}`)\n";
-                        break;
-
-                    case 80006:
-                        message += $"⏩ **{account.Name}** (`{account.Uid}`) - Đã nhận\n";
-                        break;
-
-                    case 80004:
-                    case 10015:
-                    case 10017:
-
-                        await _giftRepository.DeleteAsync(code);
-
-                        message += $"❌ GiftCode không hợp lệ.\n";
-
-                        return message;
-
-                    default:
-
-                        message += $"⚠️ **{account.Name}** (`{account.Uid}`) - Lỗi {result.ResultCode}\n";
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                message += $"❌ **{account.Name}** (`{account.Uid}`) - {ex.Message}\n";
-            }
-            finally
-            {
-                await _topHeroesClient.CloseAsync();
-            }
+            await RedeemGiftForAccountAsync(
+                account,
+                code,
+                notify);
         }
 
-        return message;
+        return $"🎁 GiftCode `{code}` đã xử lý xong.";
     }
-
     public async Task<List<GiftCode>> GetAllAsync()
     {
         return await _giftRepository.GetAllAsync();
