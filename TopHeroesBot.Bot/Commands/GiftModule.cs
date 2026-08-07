@@ -19,17 +19,30 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
     {
         await DeferAsync(ephemeral: true);
 
-        var result = await _giftService.AddAsync(
+        try
+        {
+            var result = await _giftService.AddAsync(
             code,
             async message =>
             {
                 await Context.Channel.SendMessageAsync(message);
             });
 
-        await ModifyOriginalResponseAsync(x =>
+
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = "✅ Hoàn thành.";
+            });
+        }
+        catch (Exception ex)
         {
-            x.Content = "✅ Hoàn thành";
-        });
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = $"❌ {ex.Message}";
+            });
+        }
+        
+        
     }
 
     [SlashCommand("list", "Danh sách GiftCode")]

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using TopHeroesBot.Application.Enums;
 using TopHeroesBot.Application.Interfaces;
 
 namespace TopHeroesBot.Bot.Services;
@@ -70,7 +69,7 @@ public class SchedulerService : BackgroundService
 
             await Task.Delay(delay, stoppingToken);
 
-            await scheduleService.RunNowAsync();
+            await scheduleService.RunNowAsync(RunAction.Daily,RunAction.Gold);
         }
     }
 }

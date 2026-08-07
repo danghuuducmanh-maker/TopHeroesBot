@@ -2,7 +2,6 @@
 using System.Text.Json;
 using TopHeroesBot.Application.DTOs;
 using TopHeroesBot.Application.Interfaces;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TopHeroesBot.Infrastructure.Client;
 

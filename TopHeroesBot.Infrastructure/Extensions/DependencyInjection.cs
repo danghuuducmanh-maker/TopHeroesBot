@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IGiftCodeService, GiftCodeService>();
         services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<ITopHeroesExecutor, TopHeroesExecutor>();
+        services.AddScoped<IRewardService, RewardService>();
         // Playwright Client
         services.AddScoped<ITopHeroesClient, TopHeroesClient>();
         return services;

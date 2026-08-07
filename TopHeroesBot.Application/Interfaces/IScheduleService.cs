@@ -1,4 +1,5 @@
-﻿using TopHeroesBot.Domain.Entities;
+﻿using TopHeroesBot.Application.Enums;
+using TopHeroesBot.Domain.Entities;
 
 namespace TopHeroesBot.Application.Interfaces;
 
@@ -12,5 +13,6 @@ public interface IScheduleService
 
     Task DisableAsync();
 
-    Task RunNowAsync();
+    Task RunNowAsync(
+        params RunAction[] actions);
 }

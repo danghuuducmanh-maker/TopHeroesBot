@@ -1,4 +1,5 @@
-﻿using TopHeroesBot.Application.Interfaces;
+﻿using TopHeroesBot.Application.Enums;
+using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
 
 namespace TopHeroesBot.Application.Services;
@@ -63,9 +64,9 @@ public class ScheduleService : IScheduleService
         await _scheduleRepository.SaveAsync(setting);
     }
 
-    public async Task RunNowAsync()
+    public async Task RunNowAsync(
+    params RunAction[] actions)
     {
-        await _accountService.RunDailyAsync();
-        
+        await _accountService.RunAllAsync(actions);
     }
 }

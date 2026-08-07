@@ -1,99 +1,22 @@
-﻿using System.Security.Principal;
-using TopHeroesBot.Application.Interfaces;
+﻿using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
 
 namespace TopHeroesBot.Application.Services;
 
 public class GiftCodeService : IGiftCodeService
 {
+    private readonly IRewardService _rewardService;
+    private readonly ITopHeroesExecutor _executor;
     private readonly IGiftCodeRepository _giftRepository;
     private readonly IAccountRepository _accountRepository;
-    private readonly ITopHeroesClient _topHeroesClient;
 
-    public GiftCodeService(IGiftCodeRepository giftRepository)
+    public GiftCodeService(IGiftCodeRepository giftRepository, ITopHeroesExecutor executor, IRewardService rewardService)
     {
+
         _giftRepository = giftRepository;
+        _executor = executor;
+        _rewardService = rewardService;
     }
-    private async Task RedeemGiftForAccountAsync(
-    Account account,
-    string code,
-    Func<string, Task>? notify)
-    {
-        await _topHeroesClient.CreatePageAsync();
-
-        try
-        {
-            await _topHeroesClient.LoginAsync(account.Uid);
-
-            if (notify != null)
-            {
-                await notify(
-                    $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): Đăng nhập thành công.");
-            }
-
-            var result = await _topHeroesClient.RedeemGiftAsync(code);
-
-            switch (result.ResultCode)
-            {
-                case 1:
-
-                    if (notify != null)
-                    {
-                        await notify(
-                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Thành công.");
-                    }
-
-                    break;
-
-                case 80006:
-
-                    if (notify != null)
-                    {
-                        await notify(
-                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Đã nhận.");
-                    }
-
-                    break;
-
-                case 80004:
-                case 10015:
-                case 10017:
-
-                    await _giftRepository.DeleteAsync(code);
-
-                    if (notify != null)
-                    {
-                        await notify(
-                            $"[{DateTime.Now:HH:mm:ss}] {code}: GiftCode không hợp lệ. Đã xóa khỏi danh sách.");
-                    }
-
-                    break;
-
-                default:
-
-                    if (notify != null)
-                    {
-                        await notify(
-                            $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {code}: Lỗi {result.ResultCode}");
-                    }
-
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            if (notify != null)
-            {
-                await notify(
-                    $"[{DateTime.Now:HH:mm:ss}] {account.Name} ({account.Server}): {ex.Message}");
-            }
-        }
-        finally
-        {
-            await _topHeroesClient.CloseAsync();
-        }
-    }
-
     public async Task<string> AddAsync(
     string code,
     Func<string, Task>? notify = null)
@@ -114,10 +37,10 @@ public class GiftCodeService : IGiftCodeService
 
         foreach (var account in accounts)
         {
-            await RedeemGiftForAccountAsync(
-                account,
-                code,
-                notify);
+            var context = await _executor.ExecuteAsync(
+    account.Uid,
+    ctx => _rewardService.RedeemGiftAndNotify(ctx, code),
+    notify);
         }
 
         return $"🎁 GiftCode `{code}` đã xử lý xong.";
