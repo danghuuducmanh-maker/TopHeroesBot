@@ -1,5 +1,6 @@
 ﻿using System.Security.Principal;
 using TopHeroesBot.Application.DTOs;
+using TopHeroesBot.Application.Enums;
 using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -156,11 +157,16 @@ public class AccountService : IAccountService
     Func<string, Task>? notify = null)
     {
         var context = await _executor.ExecuteAsync(
-    uid,
-    async ctx =>
-    {
-        await SaveAccount(ctx.Profile, uid);
-    },
+            uid,
+            async ctx =>
+            {
+                await RunActions(
+                        ctx,
+                        RunAction.Daily,
+                        RunAction.Gold);
+
+                await SaveAccount(ctx.Profile, uid);
+            },
     notify);
 
         if (context == null)
@@ -182,55 +188,55 @@ public class AccountService : IAccountService
     //string uid,
     //Func<string, Task>? notify = null)
     //{
-        //var exists = await _accountRepository.GetByUidAsync(uid);
+    //var exists = await _accountRepository.GetByUidAsync(uid);
 
-        //if (exists != null)
-        //{
-        //    return new AddAccountResult
-        //    {
-        //        Success = false,
-        //        Message = "UID đã tồn tại."
-        //    };
-        //}
+    //if (exists != null)
+    //{
+    //    return new AddAccountResult
+    //    {
+    //        Success = false,
+    //        Message = "UID đã tồn tại."
+    //    };
+    //}
 
-        //await _topHeroesClient.CreatePageAsync();
+    //await _topHeroesClient.CreatePageAsync();
 
-        //try
-        //{
-        //    var profile = await LoginAndNotify(uid, notify);
-        //    if (profile == null)
-        //    {
-        //        return new AddAccountResult
-        //        {
-        //            Success = false,
-        //            Message = "Đăng nhập thất bại."
-        //        };
-        //    }
-        //    var context = new NotifyContext
-        //    {
-        //        Uid = uid,
-        //        Profile = profile,
-        //        Notify = notify
-        //    };
+    //try
+    //{
+    //    var profile = await LoginAndNotify(uid, notify);
+    //    if (profile == null)
+    //    {
+    //        return new AddAccountResult
+    //        {
+    //            Success = false,
+    //            Message = "Đăng nhập thất bại."
+    //        };
+    //    }
+    //    var context = new NotifyContext
+    //    {
+    //        Uid = uid,
+    //        Profile = profile,
+    //        Notify = notify
+    //    };
 
-        //    await ClaimDailyAndNotify(context);
+    //    await ClaimDailyAndNotify(context);
 
-        //    await ClaimGoldAndNotify(context);
+    //    await ClaimGoldAndNotify(context);
 
-        //    await RedeemGiftAndNotify(context);
+    //    await RedeemGiftAndNotify(context);
 
-        //    await SaveAccount(profile, uid);
+    //    await SaveAccount(profile, uid);
 
-        //    return new AddAccountResult
-        //    {
-        //        Success = true,
-        //        Message = "Thêm tài khoản thành công."
-        //    };
-        //}
-        //finally
-        //{
-        //    await _topHeroesClient.CloseAsync();
-        //}
+    //    return new AddAccountResult
+    //    {
+    //        Success = true,
+    //        Message = "Thêm tài khoản thành công."
+    //    };
+    //}
+    //finally
+    //{
+    //    await _topHeroesClient.CloseAsync();
+    //}
     //}
     public async Task<List<Account>> GetAllAsync()
     {
@@ -376,5 +382,31 @@ public class AccountService : IAccountService
     public async Task<int> DeleteAllAsync()
     {
         return await _accountRepository.DeleteAllAsync();
+    }
+    private async Task RunActions(
+    NotifyContext context,
+    params RunAction[] actions)
+    {
+        foreach (var action in actions)
+        {
+            switch (action)
+            {
+                case RunAction.Daily:
+                    await ClaimDailyAndNotify(context);
+                    break;
+
+                case RunAction.Gold:
+                    await ClaimGoldAndNotify(context);
+                    break;
+
+                case RunAction.Gift:
+                    // Tạm thời để trống
+                    break;
+
+                case RunAction.Event:
+                    // Tạm thời để trống
+                    break;
+            }
+        }
     }
 }
