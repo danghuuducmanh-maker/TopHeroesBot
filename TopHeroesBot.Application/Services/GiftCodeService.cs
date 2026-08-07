@@ -10,10 +10,14 @@ public class GiftCodeService : IGiftCodeService
     private readonly IGiftCodeRepository _giftRepository;
     private readonly IAccountRepository _accountRepository;
 
-    public GiftCodeService(IGiftCodeRepository giftRepository, ITopHeroesExecutor executor, IRewardService rewardService)
+    public GiftCodeService(
+     IGiftCodeRepository giftRepository,
+     IAccountRepository accountRepository,
+     ITopHeroesExecutor executor,
+     IRewardService rewardService)
     {
-
         _giftRepository = giftRepository;
+        _accountRepository = accountRepository;
         _executor = executor;
         _rewardService = rewardService;
     }

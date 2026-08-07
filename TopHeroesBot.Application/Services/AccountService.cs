@@ -8,25 +8,22 @@ namespace TopHeroesBot.Application.Services;
 public class AccountService : IAccountService
 {
     private readonly IRewardService _rewardService;
-    private readonly IGiftCodeRepository _giftCodeRepository;
     private readonly IAccountRepository _accountRepository;
-    private readonly ITopHeroesClient _topHeroesClient;
     private readonly ITopHeroesExecutor _executor;
+    private readonly IGiftCodeRepository _giftCodeRepository;
+
     public AccountService(
-        IRewardService rewardService,
-        IAccountRepository accountRepository,
-        IGiftCodeRepository giftCodeRepository,
-        ITopHeroesClient topHeroesClient,
-        ITopHeroesExecutor executor)
+     IAccountRepository accountRepository,
+     IGiftCodeRepository giftRepository,
+     ITopHeroesExecutor executor,
+     IRewardService rewardService)
     {
         _accountRepository = accountRepository;
-        _giftCodeRepository = giftCodeRepository;
-        _topHeroesClient = topHeroesClient;
+        _giftCodeRepository = giftRepository;
         _executor = executor;
+        _rewardService = rewardService;
     }
 
-   
-    
     private async Task SaveAccount(
     PlayerProfile profile,
     string uid)
