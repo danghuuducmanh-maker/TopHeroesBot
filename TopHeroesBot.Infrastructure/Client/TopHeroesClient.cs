@@ -179,7 +179,8 @@ public class TopHeroesClient : ITopHeroesClient
         var response = await responseTask;
 
         string json = await response.TextAsync();
-
+        Console.WriteLine($"Gift [{code}] Response:");
+        Console.WriteLine(json);
         var result = JsonSerializer.Deserialize<GiftCodeResponse>(json);
 
         return new GiftResult

@@ -18,7 +18,6 @@ public class AccountModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Add(string uid)
     {
         await DeferAsync(ephemeral: true);
-        await DeferAsync();
 
         try
         {

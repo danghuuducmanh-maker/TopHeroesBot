@@ -63,7 +63,8 @@ public class RewardService : IRewardService
     string code)
     {
         var result = await _topHeroesClient.RedeemGiftAsync(code);
-
+        Console.WriteLine(
+    $"Gift [{code}] ResultCode = {result.ResultCode}");
         switch (result.ResultCode)
         {
             case 1:

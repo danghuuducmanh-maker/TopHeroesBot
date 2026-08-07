@@ -22,7 +22,7 @@ public class RunModule : InteractionModuleBase<SocketInteractionContext>
         RunAction? action2 = null,
         RunAction? action3 = null)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
 
         try
         {
@@ -64,7 +64,7 @@ public class RunModule : InteractionModuleBase<SocketInteractionContext>
         RunAction? action2 = null,
         RunAction? action3 = null)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
 
         try
         {
