@@ -60,11 +60,15 @@ public class AccountService : IAccountService
     {
         var daily = await _topHeroesClient.DailyAsync();
 
-        await context.Notify?.Invoke(
+        if (context.Notify != null)
+        {
+            await context.Notify(
             $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): [Daily] " +
             (daily.Status == ClaimStatus.Success
                 ? "Nhận thưởng thành công."
                 : "Hôm nay đã nhận thưởng"));
+        } 
+            
 
         return daily.Status;
     }

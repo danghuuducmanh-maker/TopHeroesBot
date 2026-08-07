@@ -133,7 +133,7 @@ public class TopHeroesClient : ITopHeroesClient
     {
         return new DailyResult
         {
-            Status = await ClaimRewardAsync("#site-widget-2146584453647872")
+            Status = await ClaimRewardAsync("#site-widget-1035124126946440")
         };
     }
 
@@ -189,6 +189,36 @@ public class TopHeroesClient : ITopHeroesClient
             ResultCode = result?.Code ?? -1
         };
     }
+    private async Task<ClaimStatus> ClaimRewardAsync(string widgetId)
+    {
+        if (_page == null)
+            throw new InvalidOperationException("Chưa đăng nhập.");
+
+        var buttons = _page
+            .Locator(widgetId)   // <-- dùng widgetId, không hardcode
+            .Locator(".handle");
+
+        int count = await buttons.CountAsync();
+
+        for (int i = 0; i < count; i++)
+        {
+            var button = buttons.Nth(i);
+
+            string text = (await button.Locator("span").InnerTextAsync()).Trim();
+
+            bool isLocked = await button.EvaluateAsync<bool>(
+                "e => e.classList.contains('unsign')");
+
+            if (text == "Sign in" && !isLocked)
+            {
+                await button.ClickAsync();
+
+                return ClaimStatus.Success;
+            }
+        }
+
+        return ClaimStatus.AlreadyClaimed;
+    }
     private async Task<EventStatus> ClaimEventRewardAsync(string widgetId)
     {
         if (_page == null)
@@ -233,36 +263,7 @@ public class TopHeroesClient : ITopHeroesClient
         _browser = null;
         _playwright = null;
     }
-    private async Task<ClaimStatus> ClaimRewardAsync(string widgetId)
-    {
-        if (_page == null)
-            throw new InvalidOperationException("Chưa đăng nhập.");
-
-        var buttons = _page
-            .Locator(widgetId)   // <-- dùng widgetId, không hardcode
-            .Locator(".handle");
-
-        int count = await buttons.CountAsync();
-
-        for (int i = 0; i < count; i++)
-        {
-            var button = buttons.Nth(i);
-
-            string text = (await button.Locator("span").InnerTextAsync()).Trim();
-
-            bool isLocked = await button.EvaluateAsync<bool>(
-                "e => e.classList.contains('unsign')");
-
-            if (text == "Sign in" && !isLocked)
-            {
-                await button.ClickAsync();
-
-                return ClaimStatus.Success;
-            }
-        }
-
-        return ClaimStatus.AlreadyClaimed;
-    }
+    
     
     public async Task<bool> ElementExistsAsync(string selector)
     {

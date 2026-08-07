@@ -64,6 +64,9 @@ public class SchedulerService : BackgroundService
             }
 
             var delay = nextRun - now;
+            Console.WriteLine($"Now     : {now}");
+            Console.WriteLine($"NextRun : {nextRun}");
+            Console.WriteLine($"Delay   : {delay}");
 
             await Task.Delay(delay, stoppingToken);
 
