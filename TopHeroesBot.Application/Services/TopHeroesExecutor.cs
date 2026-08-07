@@ -8,17 +8,18 @@ public class TopHeroesExecutor : ITopHeroesExecutor
 {
     private readonly ITopHeroesClient _topHeroesClient;
 
-    public TopHeroesExecutor(
-        ITopHeroesClient topHeroesClient)
+    public Task<NotifyContext?> CreateContextAsync(
+        string uid,
+        Func<string, Task>? notify = null)
     {
-        _topHeroesClient = topHeroesClient;
+        throw new NotImplementedException();
     }
 
-    public async Task ExecuteAsync(
+    public Task ExecuteAsync(
         string uid,
         Func<NotifyContext, Task> action,
         Func<string, Task>? notify = null)
     {
-
+        throw new NotImplementedException();
     }
 }

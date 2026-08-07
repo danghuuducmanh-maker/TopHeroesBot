@@ -31,7 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IGiftCodeService, GiftCodeService>();
         services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<ITopHeroesExecutor, TopHeroesExecutor>();
-        // Playwright Client (tạm thời là Mock)
+        // Playwright Client
         services.AddScoped<ITopHeroesClient, TopHeroesClient>();
         return services;
     }

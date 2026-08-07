@@ -3,7 +3,6 @@ using TopHeroesBot.Application.DTOs;
 using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
 namespace TopHeroesBot.Application.Services;
 
 public class AccountService : IAccountService
@@ -21,12 +20,7 @@ public class AccountService : IAccountService
         _giftCodeRepository = giftCodeRepository;
         _topHeroesClient = topHeroesClient;
     }
-    public class NotifyContext
-    {
-        public string Uid { get; set; } = "";
-        public PlayerProfile Profile { get; set; } = null!;
-        public Func<string, Task>? Notify { get; set; }
-    }
+    
     private async Task<PlayerProfile?> LoginAndNotify(
     string uid,
     Func<string, Task>? notify)
