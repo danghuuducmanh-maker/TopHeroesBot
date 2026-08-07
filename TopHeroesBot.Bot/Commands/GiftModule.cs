@@ -41,8 +41,8 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
                 x.Content = $"❌ {ex.Message}";
             });
         }
-        
-        
+        await Context.Channel.SendMessageAsync("🏁 Đã chạy xong tất cả tài khoản.");
+
     }
 
     [SlashCommand("list", "Danh sách GiftCode")]
