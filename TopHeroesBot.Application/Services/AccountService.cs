@@ -3,6 +3,7 @@ using TopHeroesBot.Application.DTOs;
 using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace TopHeroesBot.Application.Services;
 
 public class AccountService : IAccountService
@@ -10,17 +11,19 @@ public class AccountService : IAccountService
     private readonly IGiftCodeRepository _giftCodeRepository;
     private readonly IAccountRepository _accountRepository;
     private readonly ITopHeroesClient _topHeroesClient;
-
+    private readonly ITopHeroesExecutor _executor;
     public AccountService(
     IAccountRepository accountRepository,
     IGiftCodeRepository giftCodeRepository,
-    ITopHeroesClient topHeroesClient)
+    ITopHeroesClient topHeroesClient,
+    ITopHeroesExecutor executor)
     {
         _accountRepository = accountRepository;
         _giftCodeRepository = giftCodeRepository;
         _topHeroesClient = topHeroesClient;
+        _executor = executor;
     }
-    
+
     private async Task<PlayerProfile?> LoginAndNotify(
     string uid,
     Func<string, Task>? notify)
@@ -61,8 +64,8 @@ public class AccountService : IAccountService
             (daily.Status == ClaimStatus.Success
                 ? "Nhận thưởng thành công."
                 : "Hôm nay đã nhận thưởng"));
-        } 
-            
+        }
+
 
         return daily.Status;
     }
@@ -152,56 +155,83 @@ public class AccountService : IAccountService
     string uid,
     Func<string, Task>? notify = null)
     {
-        var exists = await _accountRepository.GetByUidAsync(uid);
+        var context = await _executor.ExecuteAsync(
+    uid,
+    async ctx =>
+    {
+        await SaveAccount(ctx.Profile, uid);
+    },
+    notify);
 
-        if (exists != null)
+        if (context == null)
         {
             return new AddAccountResult
             {
                 Success = false,
-                Message = "UID đã tồn tại."
+                Message = "Đăng nhập thất bại."
             };
         }
 
-        await _topHeroesClient.CreatePageAsync();
-
-        try
+        return new AddAccountResult
         {
-            var profile = await LoginAndNotify(uid, notify);
-            if (profile == null)
-            {
-                return new AddAccountResult
-                {
-                    Success = false,
-                    Message = "Đăng nhập thất bại."
-                };
-            }
-            var context = new NotifyContext
-            {
-                Uid = uid,
-                Profile = profile,
-                Notify = notify
-            };
-
-            await ClaimDailyAndNotify(context);
-
-            await ClaimGoldAndNotify(context);
-
-            await RedeemGiftAndNotify(context);
-
-            await SaveAccount(profile, uid);
-
-            return new AddAccountResult
-            {
-                Success = true,
-                Message = "Thêm tài khoản thành công."
-            };
-        }
-        finally
-        {
-            await _topHeroesClient.CloseAsync();
-        }
+            Success = true,
+            Message = "Thêm tài khoản thành công."
+        };
     }
+    //public async Task<AddAccountResult> AddAccountAsync(
+    //string uid,
+    //Func<string, Task>? notify = null)
+    //{
+        //var exists = await _accountRepository.GetByUidAsync(uid);
+
+        //if (exists != null)
+        //{
+        //    return new AddAccountResult
+        //    {
+        //        Success = false,
+        //        Message = "UID đã tồn tại."
+        //    };
+        //}
+
+        //await _topHeroesClient.CreatePageAsync();
+
+        //try
+        //{
+        //    var profile = await LoginAndNotify(uid, notify);
+        //    if (profile == null)
+        //    {
+        //        return new AddAccountResult
+        //        {
+        //            Success = false,
+        //            Message = "Đăng nhập thất bại."
+        //        };
+        //    }
+        //    var context = new NotifyContext
+        //    {
+        //        Uid = uid,
+        //        Profile = profile,
+        //        Notify = notify
+        //    };
+
+        //    await ClaimDailyAndNotify(context);
+
+        //    await ClaimGoldAndNotify(context);
+
+        //    await RedeemGiftAndNotify(context);
+
+        //    await SaveAccount(profile, uid);
+
+        //    return new AddAccountResult
+        //    {
+        //        Success = true,
+        //        Message = "Thêm tài khoản thành công."
+        //    };
+        //}
+        //finally
+        //{
+        //    await _topHeroesClient.CloseAsync();
+        //}
+    //}
     public async Task<List<Account>> GetAllAsync()
     {
         return await _accountRepository.GetAllAsync();
