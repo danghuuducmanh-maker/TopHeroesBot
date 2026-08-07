@@ -1,15 +1,19 @@
 ﻿using TopHeroesBot.Application.Enums;
 using TopHeroesBot.Application.Interfaces;
+using Discord;
+using Discord.WebSocket;
 
 namespace TopHeroesBot.Bot.Services;
+
 
 public class SchedulerService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-
-    public SchedulerService(IServiceScopeFactory scopeFactory)
+    private readonly DiscordSocketClient _client;
+    public SchedulerService(IServiceScopeFactory scopeFactory, DiscordSocketClient client)
     {
         _scopeFactory = scopeFactory;
+        _client = client;
     }
     
 
@@ -69,7 +73,27 @@ public class SchedulerService : BackgroundService
 
             await Task.Delay(delay, stoppingToken);
 
-            await scheduleService.RunNowAsync(RunAction.Daily,RunAction.Gold);
+            ulong channelId = 1425855503145369715; // ID channel log của bạn
+
+            Func<string, Task> notify = async message =>
+            {
+                var channel =
+                    _client.GetChannel(channelId) as IMessageChannel;
+
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync(message);
+                }
+            };
+
+            await notify("🚀 Scheduler bắt đầu.");
+
+            await scheduleService.RunNowAsync(
+                notify,
+                RunAction.Daily,
+                RunAction.Gold);
+
+            await notify("✅ Scheduler hoàn thành.");
         }
     }
 }

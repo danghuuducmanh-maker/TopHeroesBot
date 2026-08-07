@@ -65,8 +65,11 @@ public class ScheduleService : IScheduleService
     }
 
     public async Task RunNowAsync(
+    Func<string, Task>? notify = null,
     params RunAction[] actions)
     {
-        await _accountService.RunAllAsync(actions);
+        await _accountService.RunAllAsync(
+            actions,
+            notify);
     }
 }

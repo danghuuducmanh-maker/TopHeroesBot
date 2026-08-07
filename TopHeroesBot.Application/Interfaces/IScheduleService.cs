@@ -14,5 +14,6 @@ public interface IScheduleService
     Task DisableAsync();
 
     Task RunNowAsync(
+        Func<string, Task>? notify = null,
         params RunAction[] actions);
 }
