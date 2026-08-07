@@ -11,4 +11,5 @@ public interface IRewardService
     Task RedeemGiftAndNotify(
         NotifyContext context,
         string code);
+    Task RedeemAllGiftAndNotify(NotifyContext context);
 }

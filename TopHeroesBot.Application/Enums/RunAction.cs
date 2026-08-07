@@ -5,6 +5,5 @@ public enum RunAction
     All,
     Daily,
     Gold,
-    Gift,
-    Event
+    Gift
 }

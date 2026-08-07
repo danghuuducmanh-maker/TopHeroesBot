@@ -62,10 +62,6 @@ public class RewardService : IRewardService
     NotifyContext context,
     string code)
     {
-        //var giftCodes = await _giftCodeRepository.GetAllAsync();
-
-        //foreach (var gift in giftCodes)
-        //{
         var result = await _topHeroesClient.RedeemGiftAsync(code);
 
         switch (result.ResultCode)
@@ -102,6 +98,18 @@ public class RewardService : IRewardService
 
                 break;
         }
-        //}
+    }
+
+    public async Task RedeemAllGiftAndNotify(
+    NotifyContext context)
+    {
+        var giftCodes = await _giftCodeRepository.GetAllAsync();
+
+        foreach (var gift in giftCodes)
+        {
+            await RedeemGiftAndNotify(
+                context,
+                gift.Code);
+        }
     }
 }

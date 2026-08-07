@@ -93,41 +93,7 @@ public class AccountService : IAccountService
     {
         return await _accountRepository.DeleteAllAsync();
     }
-    private async Task RunActions(
-    NotifyContext context,
-    params RunAction[] actions)
-    {
-        if (actions.Contains(RunAction.All))
-        {
-            actions =
-            [
-                RunAction.Daily,
-                RunAction.Gold,
-                RunAction.Gift
-            ];
-        }
-        foreach (var action in actions)
-        {
-            switch (action)
-            {
-                case RunAction.Daily:
-                    await _rewardService.ClaimDailyAndNotify(context);
-                    break;
-
-                case RunAction.Gold:
-                    await _rewardService.ClaimGoldAndNotify(context);
-                    break;
-
-                case RunAction.Gift:
-                    // Tạm thời để trống
-                    break;
-
-                case RunAction.Event:
-                    // Tạm thời để trống
-                    break;
-            }
-        }
-    }
+   
     public async Task<bool> RunAsync(
      string uid,
      RunAction[] actions,
@@ -158,6 +124,37 @@ public class AccountService : IAccountService
                 account.Uid,
                 actions,
                 notify);
+        }
+    }
+   private async Task RunActions(
+   NotifyContext context,
+   params RunAction[] actions)
+    {
+        if (actions.Contains(RunAction.All))
+        {
+            actions =
+            [
+                RunAction.Daily,
+                RunAction.Gold,
+                RunAction.Gift
+            ];
+        }
+        foreach (var action in actions)
+        {
+            switch (action)
+            {
+                case RunAction.Daily:
+                    await _rewardService.ClaimDailyAndNotify(context);
+                    break;
+
+                case RunAction.Gold:
+                    await _rewardService.ClaimGoldAndNotify(context);
+                    break;
+
+                case RunAction.Gift:
+                    await _rewardService.RedeemAllGiftAndNotify(context);
+                    break;
+            }
         }
     }
 }
