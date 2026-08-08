@@ -25,6 +25,7 @@ public class GiftCodeService : IGiftCodeService
     string code,
     Func<string, Task>? notify = null)
     {
+
         code = code.Trim().ToUpper();
 
         var exists = await _giftRepository.GetByCodeAsync(code);
@@ -41,10 +42,24 @@ public class GiftCodeService : IGiftCodeService
 
         foreach (var account in accounts)
         {
-            var context = await _executor.ExecuteAsync(
+            var status = await _executor.ExecuteAsync(
     account.Uid,
     ctx => _rewardService.RedeemGiftAndNotify(ctx, code),
     notify);
+
+            if (status == GiftRedeemStatus.TooManyRequests)
+            {
+                await notify?.Invoke(
+                    "⏳ Gặp giới hạn IP (10017). Chờ 20 phút...");
+
+                await Task.Delay(TimeSpan.FromMinutes(20));
+
+                // thử lại chính account này
+                status = await _executor.ExecuteAsync(
+                    account.Uid,
+                    ctx => _rewardService.RedeemGiftAndNotify(ctx, code),
+                    notify);
+            }
         }
 
         return $"🎁 GiftCode `{code}` đã xử lý xong.";

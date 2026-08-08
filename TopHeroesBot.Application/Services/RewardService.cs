@@ -58,7 +58,7 @@ public class RewardService : IRewardService
 
         return gold.Status;
     }
-    public async Task RedeemGiftAndNotify(
+    public async Task<GiftRedeemStatus> RedeemGiftAndNotify(
     NotifyContext context,
     string code)
     {
@@ -71,33 +71,30 @@ public class RewardService : IRewardService
 
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Thành công.");
-
-                break;
+                return GiftRedeemStatus.Success;
 
             case 80006:
-
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Đã sử dụng.");
-
-                break;
+                return GiftRedeemStatus.Used;
+            case 10017:
+                await context.Notify?.Invoke(
+        $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Quá nhiều yêu cầu.");
+                return GiftRedeemStatus.TooManyRequests;
 
             case 80004:
             case 10015:
-            case 10017:
-
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Không hợp lệ.");
 
                 await _giftCodeRepository.DeleteAsync(code);
-
-                break;
+                return GiftRedeemStatus.Invalid;
 
             default:
 
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Lỗi {result.ResultCode}");
-
-                break;
+                return GiftRedeemStatus.Error;
         }
     }
 

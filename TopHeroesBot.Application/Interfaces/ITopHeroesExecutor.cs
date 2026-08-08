@@ -8,4 +8,8 @@ public interface ITopHeroesExecutor
         string uid,
         Func<NotifyContext, Task> action,
         Func<string, Task>? notify = null);
+    Task<T> ExecuteAsync<T>(
+    string uid,
+    Func<NotifyContext, Task<T>> action,
+    Func<string, Task>? notify = null);
 }

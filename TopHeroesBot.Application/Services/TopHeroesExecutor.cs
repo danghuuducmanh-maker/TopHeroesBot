@@ -67,4 +67,32 @@ public class TopHeroesExecutor : ITopHeroesExecutor
             return null;
         }
     }
+    public async Task<T> ExecuteAsync<T>(
+    string uid,
+    Func<NotifyContext, Task<T>> action,
+    Func<string, Task>? notify = null)
+    {
+        await _topHeroesClient.CreatePageAsync();
+
+        try
+        {
+            var profile = await LoginAndNotify(uid, notify);
+
+            if (profile == null)
+                return default!;
+            var context = new NotifyContext
+            {
+                Uid = uid,
+                Profile = profile,
+                Notify = notify
+            };
+            await action(context);
+
+            return await action(context);
+        }
+        finally
+        {
+            await _topHeroesClient.CloseAsync();
+        }
+    }
 }
