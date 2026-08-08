@@ -79,14 +79,20 @@ public class SchedulerService : BackgroundService
             {
                 var channel =
                     _client.GetChannel(channelId) as IMessageChannel;
-
+                Console.WriteLine($"ConnectionState = {_client.ConnectionState}");
                 if (channel != null)
                 {
                     await channel.SendMessageAsync(message);
                 }
+                else
+                    Console.WriteLine(channel == null ? "Channel null" : channel.Name);
             };
 
+            Console.WriteLine("Scheduler bắt đầu chạy");
+
             await notify("🚀 Scheduler bắt đầu.");
+
+            Console.WriteLine("Đã gửi tin nhắn bắt đầu");
 
             await scheduleService.RunNowAsync(
                 notify,
