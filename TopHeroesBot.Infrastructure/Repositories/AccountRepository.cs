@@ -17,6 +17,11 @@ public class AccountRepository : IAccountRepository
 
     public async Task AddAsync(Account account)
     {
+        var nextOrder = await _context.Accounts.AnyAsync()
+    ? await _context.Accounts.MaxAsync(x => x.Order) + 1
+    : 1;
+
+        account.Order = nextOrder;
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
     }
@@ -35,8 +40,8 @@ public class AccountRepository : IAccountRepository
     public async Task<List<Account>> GetAllAsync()
     {
         return await _context.Accounts
-            .OrderBy(x => x.Server)
-            .ToListAsync();
+    .OrderBy(x => x.Order)
+    .ToListAsync();
     }
 
     public async Task<Account?> GetByUidAsync(string uid)
