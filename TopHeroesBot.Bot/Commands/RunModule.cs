@@ -72,8 +72,11 @@ public class RunModule : InteractionModuleBase<SocketInteractionContext>
            RunActionHelper.Build(action1, action2, action3),
            async message =>
            {
+               Console.WriteLine($"Send Discord ({message.Length}): {message}");
+
                await Context.Channel.SendMessageAsync(message);
            });
+
             await Context.Channel.SendMessageAsync("🏁 Đã chạy xong tất cả tài khoản.");
             await ModifyOriginalResponseAsync(x =>
             {

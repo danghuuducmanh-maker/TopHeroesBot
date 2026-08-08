@@ -11,4 +11,5 @@ public interface IGiftCodeRepository
     Task AddAsync(GiftCode giftCode);
 
     Task DeleteAsync(string code);
+    Task RemoveAllAsync();
 }

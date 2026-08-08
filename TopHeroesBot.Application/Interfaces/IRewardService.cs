@@ -9,7 +9,7 @@ public interface IRewardService
     Task<EventStatus> ClaimGoldAndNotify(NotifyContext context);
 
     Task<GiftRedeemStatus> RedeemGiftAndNotify(
-    NotifyContext context,
-    string code);
+     NotifyContext context,
+     string code);
     Task RedeemAllGiftAndNotify(NotifyContext context);
 }

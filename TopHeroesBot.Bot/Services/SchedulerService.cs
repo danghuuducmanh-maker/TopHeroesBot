@@ -73,7 +73,7 @@ public class SchedulerService : BackgroundService
 
             await Task.Delay(delay, stoppingToken);
 
-            ulong channelId = 1425855503145369715; // ID channel log của bạn
+            ulong channelId = 1425855503795355730; // ID channel log của bạn
 
             Func<string, Task> notify = async message =>
             {
@@ -88,11 +88,7 @@ public class SchedulerService : BackgroundService
                     Console.WriteLine(channel == null ? "Channel null" : channel.Name);
             };
 
-            Console.WriteLine("Scheduler bắt đầu chạy");
-
             await notify("🚀 Scheduler bắt đầu.");
-
-            Console.WriteLine("Đã gửi tin nhắn bắt đầu");
 
             await scheduleService.RunNowAsync(
                 notify,

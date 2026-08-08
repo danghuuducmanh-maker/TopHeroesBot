@@ -11,4 +11,6 @@ public interface IGiftCodeService
     Task<List<GiftCode>> GetAllAsync();
 
     Task<bool> DeleteAsync(string code);
+
+    Task<string> RemoveAllAsync();
 }

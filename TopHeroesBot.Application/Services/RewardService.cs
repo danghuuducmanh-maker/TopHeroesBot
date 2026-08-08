@@ -1,6 +1,6 @@
 ﻿using TopHeroesBot.Application.DTOs;
 using TopHeroesBot.Application.Interfaces;
-
+using TopHeroesBot.Application.Exceptions;
 namespace TopHeroesBot.Application.Services;
 
 public class RewardService : IRewardService
@@ -63,37 +63,45 @@ public class RewardService : IRewardService
     string code)
     {
         var result = await _topHeroesClient.RedeemGiftAsync(code);
-        Console.WriteLine(
-    $"Gift [{code}] ResultCode = {result.ResultCode}");
+
         switch (result.ResultCode)
         {
             case 1:
 
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Thành công.");
+
                 return GiftRedeemStatus.Success;
 
             case 80006:
+
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Đã sử dụng.");
+
                 return GiftRedeemStatus.Used;
-            case 10017:
-                await context.Notify?.Invoke(
-        $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Quá nhiều yêu cầu.");
-                return GiftRedeemStatus.TooManyRequests;
 
             case 80004:
             case 10015:
+
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Không hợp lệ.");
 
                 await _giftCodeRepository.DeleteAsync(code);
+
                 return GiftRedeemStatus.Invalid;
+
+            case 10017:
+
+                await context.Notify?.Invoke(
+                    $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Quá nhiều yêu cầu (10017).");
+
+                return GiftRedeemStatus.TooManyRequests;
 
             default:
 
                 await context.Notify?.Invoke(
                     $"[{DateTime.Now:HH:mm:ss}] {context.Uid} {context.Profile.Name} ({context.Profile.Server}): {code}: Lỗi {result.ResultCode}");
+
                 return GiftRedeemStatus.Error;
         }
     }

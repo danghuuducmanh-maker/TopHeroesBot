@@ -25,6 +25,8 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
             code,
             async message =>
             {
+                Console.WriteLine($"Discord message length = {message.Length}");
+
                 await Context.Channel.SendMessageAsync(message);
             });
 
@@ -91,5 +93,27 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
             .Build();
 
         await RespondAsync(embed: embed);
+    }
+    [SlashCommand("removeall", "Xóa toàn bộ GiftCode")]
+    public async Task RemoveAll()
+    {
+        await DeferAsync(ephemeral: true);
+
+        try
+        {
+            var result = await _giftService.RemoveAllAsync();
+
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = result;
+            });
+        }
+        catch (Exception ex)
+        {
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = $"❌ {ex.Message}";
+            });
+        }
     }
 }

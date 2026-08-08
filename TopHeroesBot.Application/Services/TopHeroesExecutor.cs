@@ -1,4 +1,5 @@
 ﻿using TopHeroesBot.Application.DTOs;
+using TopHeroesBot.Application.Exceptions;
 using TopHeroesBot.Application.Interfaces;
 
 namespace TopHeroesBot.Application.Services;
@@ -15,6 +16,41 @@ public class TopHeroesExecutor : ITopHeroesExecutor
     Func<NotifyContext, Task> action,
     Func<string, Task>? notify = null)
     {
+        while (true)
+        {
+            await _topHeroesClient.CreatePageAsync();
+            try
+            {
+                var profile = await LoginAndNotify(uid, notify);
+
+                if (profile == null)
+                    return null;
+
+                var context = new NotifyContext
+                {
+                    Uid = uid,
+                    Profile = profile,
+                    Notify = notify
+                };
+
+                await action(context);
+
+                return context;
+            }
+           
+            finally
+            {
+                await _topHeroesClient.CloseAsync();
+            }
+
+        }
+    }
+    public async Task<GiftRedeemStatus> ExecuteAsync(
+    string uid,
+    Func<NotifyContext, Task<GiftRedeemStatus>> action,
+    Func<string, Task>? notify = null)
+    {
+
         await _topHeroesClient.CreatePageAsync();
 
         try
@@ -22,16 +58,16 @@ public class TopHeroesExecutor : ITopHeroesExecutor
             var profile = await LoginAndNotify(uid, notify);
 
             if (profile == null)
-                return null;
+                return GiftRedeemStatus.Error;
+
             var context = new NotifyContext
             {
                 Uid = uid,
                 Profile = profile,
                 Notify = notify
             };
-            await action(context);
 
-            return context;
+            return await action(context);
         }
         finally
         {
@@ -67,32 +103,6 @@ public class TopHeroesExecutor : ITopHeroesExecutor
             return null;
         }
     }
-    public async Task<T> ExecuteAsync<T>(
-    string uid,
-    Func<NotifyContext, Task<T>> action,
-    Func<string, Task>? notify = null)
-    {
-        await _topHeroesClient.CreatePageAsync();
-
-        try
-        {
-            var profile = await LoginAndNotify(uid, notify);
-
-            if (profile == null)
-                return default!;
-            var context = new NotifyContext
-            {
-                Uid = uid,
-                Profile = profile,
-                Notify = notify
-            };
-            await action(context);
-
-            return await action(context);
-        }
-        finally
-        {
-            await _topHeroesClient.CloseAsync();
-        }
-    }
+    
+    
 }

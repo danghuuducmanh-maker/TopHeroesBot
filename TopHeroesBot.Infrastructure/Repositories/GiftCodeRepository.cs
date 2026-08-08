@@ -42,4 +42,10 @@ public class GiftCodeRepository : IGiftCodeRepository
 
         await _context.SaveChangesAsync();
     }
+    public async Task RemoveAllAsync()
+    {
+        _context.GiftCodes.RemoveRange(_context.GiftCodes);
+
+        await _context.SaveChangesAsync();
+    }
 }

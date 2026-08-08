@@ -12,20 +12,65 @@ public class TopHeroesClient : ITopHeroesClient
     private IPlaywright? _playwright;
     private IBrowser? _browser;
     private IPage? _page;
+    private IBrowserContext? _context;
 
-    public async Task CreatePageAsync()
+    public async Task CreateBrowserAsync()
     {
+       
         _playwright = await Playwright.CreateAsync();
 
         _browser = await _playwright.Chromium.LaunchAsync(
             new BrowserTypeLaunchOptions
             {
-                Headless = true
+                Headless = true,
+
+                Args =
+                [
+                    "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-extensions",
+                "--disable-background-networking",
+                "--disable-sync",
+                "--disable-default-apps",
+                "--mute-audio",
+                "--no-first-run",
+                "--no-default-browser-check"
+                ]
             });
+        Console.WriteLine(
+   $"CREATE BROWSER - Client = {GetHashCode()}");
+    }
+    public async Task CreatePageAsync()
+    {
+        if (_browser == null)
+            throw new InvalidOperationException("Browser chưa được tạo.");
 
-        _page = await _browser.NewPageAsync();
+        _context = await _browser.NewContextAsync();
 
-        await _page.GotoAsync("https://topheroes.pay-store.rivergame.net/en");
+        _page = await _context.NewPageAsync();
+
+        await _page.RouteAsync("**/*", async route =>
+        {
+            var type = route.Request.ResourceType;
+
+            if (type == "image" ||
+                type == "font" ||
+                type == "media")
+            {
+                await route.AbortAsync();
+            }
+            else
+            {
+                await route.ContinueAsync();
+            }
+        });
+
+        await _page.GotoAsync(
+            "https://topheroes.pay-store.rivergame.net/en");
+        Console.WriteLine(
+    $"CREATE PAGE - Client = {GetHashCode()}, Browser = {_browser != null}");
     }
 
     public async Task LoginAsync(string uid)
@@ -174,6 +219,7 @@ public class TopHeroesClient : ITopHeroesClient
             await textbox.FillAsync(code);
         }
 
+
         // Đợi API trả về
         var responseTask = _page.WaitForResponseAsync(r =>
             r.Url.Contains("/api/v2/store/redemption/redeem") &&
@@ -205,11 +251,18 @@ public class TopHeroesClient : ITopHeroesClient
         Console.WriteLine(json);
         var result = JsonSerializer.Deserialize<GiftCodeResponse>(json);
 
+        if (result?.Code == 1)
+        {
+            await ClosePopupAsync();
+        }
         return new GiftResult
         {
             Code = code,
             ResultCode = result?.Code ?? -1
         };
+        
+
+        
     }
     private async Task<ClaimStatus> ClaimRewardAsync(string widgetId)
     {
@@ -291,17 +344,25 @@ public class TopHeroesClient : ITopHeroesClient
     }
     public async Task CloseAsync()
     {
-        if (_page != null)
-            await _page.CloseAsync();
+        if (_context != null)
+            await _context.CloseAsync();
 
+        _page = null;
+        _context = null;
+    }
+    public async Task CloseBrowserAsync()
+    {
         if (_browser != null)
             await _browser.CloseAsync();
 
         _playwright?.Dispose();
 
-        _page = null;
         _browser = null;
         _playwright = null;
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
     private async Task ClosePopupAsync()
     {

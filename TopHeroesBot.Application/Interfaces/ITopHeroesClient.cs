@@ -4,6 +4,7 @@ namespace TopHeroesBot.Application.Interfaces;
 
 public interface ITopHeroesClient
 {
+    Task CreateBrowserAsync();
     Task CreatePageAsync();
 
     Task LoginAsync(string uid);
@@ -17,4 +18,6 @@ public interface ITopHeroesClient
     Task<EventResult> GoldAsync();
 
     Task CloseAsync();
+
+    Task CloseBrowserAsync();
 }

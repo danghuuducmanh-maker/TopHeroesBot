@@ -1,4 +1,5 @@
-﻿using TopHeroesBot.Application.DTOs;
+﻿using System.Text.Json.Serialization;
+using TopHeroesBot.Application.DTOs;
 using TopHeroesBot.Application.Enums;
 using TopHeroesBot.Application.Interfaces;
 using TopHeroesBot.Domain.Entities;
@@ -10,12 +11,14 @@ public class AccountService : IAccountService
     private readonly IRewardService _rewardService;
     private readonly IAccountRepository _accountRepository;
     private readonly ITopHeroesExecutor _executor;
-
+    private readonly ITopHeroesClient _topHeroesClient;
     public AccountService(
+    ITopHeroesClient topHeroesClient,
      IAccountRepository accountRepository,
      ITopHeroesExecutor executor,
      IRewardService rewardService)
     {
+        _topHeroesClient = topHeroesClient;
         _accountRepository = accountRepository;
         _executor = executor;
         _rewardService = rewardService;
@@ -87,40 +90,59 @@ public class AccountService : IAccountService
     {
         return await _accountRepository.DeleteAllAsync();
     }
-   
+
     public async Task<bool> RunAsync(
-     string uid,
-     RunAction[] actions,
-     Func<string, Task>? notify = null)
+    string uid,
+    RunAction[] actions,
+    Func<string, Task>? notify = null)
     {
         var account = await _accountRepository.GetByUidAsync(uid);
 
         if (account == null)
             return false;
 
-        await _executor.ExecuteAsync(
-            uid,
-            ctx => RunActions(ctx, actions),
+        await RunAccountsAsync(
+            new[] { account },
+            actions,
             notify);
 
         return true;
     }
 
     public async Task RunAllAsync(
-        RunAction[] actions,
-        Func<string, Task>? notify = null)
+    RunAction[] actions,
+    Func<string, Task>? notify = null)
     {
         var accounts = await _accountRepository.GetAllAsync();
 
-        foreach (var account in accounts)
+        await RunAccountsAsync(
+            accounts,
+            actions,
+            notify);
+    }
+    private async Task RunAccountsAsync(
+    IEnumerable<Account> accounts,
+    RunAction[] actions,
+    Func<string, Task>? notify = null)
+    {
+        await _topHeroesClient.CreateBrowserAsync();
+
+        try
         {
-            await RunAsync(
-                account.Uid,
-                actions,
-                notify);
+            foreach (var account in accounts)
+            {
+                await _executor.ExecuteAsync(
+                    account.Uid,
+                    ctx => RunActions(ctx, actions),
+                    notify);
+            }
+        }
+        finally
+        {
+            await _topHeroesClient.CloseBrowserAsync();
         }
     }
-   private async Task RunActions(
+    private async Task RunActions(
    NotifyContext context,
    params RunAction[] actions)
     {
