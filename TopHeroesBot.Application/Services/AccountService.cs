@@ -10,16 +10,13 @@ public class AccountService : IAccountService
     private readonly IRewardService _rewardService;
     private readonly IAccountRepository _accountRepository;
     private readonly ITopHeroesExecutor _executor;
-    private readonly IGiftCodeRepository _giftCodeRepository;
 
     public AccountService(
      IAccountRepository accountRepository,
-     IGiftCodeRepository giftRepository,
      ITopHeroesExecutor executor,
      IRewardService rewardService)
     {
         _accountRepository = accountRepository;
-        _giftCodeRepository = giftRepository;
         _executor = executor;
         _rewardService = rewardService;
     }

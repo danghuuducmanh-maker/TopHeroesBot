@@ -163,7 +163,16 @@ public class TopHeroesClient : ITopHeroesClient
             AriaRole.Textbox,
             new() { Name = "Enter the code" });
 
-        await textbox.FillAsync(code);
+        try
+        {
+            await textbox.FillAsync(code);
+        }
+        catch (TimeoutException)
+        {
+            await ClosePopupAsync();
+
+            await textbox.FillAsync(code);
+        }
 
         // Đợi API trả về
         var responseTask = _page.WaitForResponseAsync(r =>
@@ -171,10 +180,23 @@ public class TopHeroesClient : ITopHeroesClient
             r.Request.Method == "POST");
 
         // Click Confirm
-        await _page.GetByRole(
+        try
+        {
+            await _page.GetByRole(
                 AriaRole.Button,
                 new() { Name = "Confirm" })
             .ClickAsync();
+        }
+        catch (TimeoutException)
+        {
+            await ClosePopupAsync();
+
+            await _page.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Confirm" })
+            .ClickAsync();
+        }
+        
 
         var response = await responseTask;
 
@@ -211,7 +233,16 @@ public class TopHeroesClient : ITopHeroesClient
 
             if (text == "Sign in" && !isLocked)
             {
-                await button.ClickAsync();
+                try
+                {
+                    await button.ClickAsync();
+                }
+                catch (TimeoutException)
+                {
+                    await ClosePopupAsync();
+
+                    await button.ClickAsync();
+                }
 
                 return ClaimStatus.Success;
             }
@@ -241,7 +272,16 @@ public class TopHeroesClient : ITopHeroesClient
 
             if (text == "Sign in" && !isLocked)
             {
-                await button.ClickAsync();
+                try
+                {
+                    await button.ClickAsync();
+                }
+                catch (TimeoutException)
+                {
+                    await ClosePopupAsync();
+
+                    await button.ClickAsync();
+                }
 
                 return EventStatus.Success;
             }
@@ -263,8 +303,40 @@ public class TopHeroesClient : ITopHeroesClient
         _browser = null;
         _playwright = null;
     }
-    
-    
+    private async Task ClosePopupAsync()
+    {
+        if (_page == null)
+            return;
+
+        try
+        {
+            var popup = _page.Locator(".dialog-collection");
+
+            await popup.WaitForAsync(new()
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 2000
+            });
+
+            // Đợi animation hoàn tất
+            
+
+            // Click ra ngoài popup
+            await _page.Mouse.ClickAsync(20, 20);
+
+            // Chờ popup biến mất
+            await popup.WaitForAsync(new()
+            {
+                State = WaitForSelectorState.Hidden,
+                Timeout = 500
+            });
+        }
+        catch (TimeoutException)
+        {
+            // Không có popup hoặc popup không đóng được
+        }
+    }
+
     public async Task<bool> ElementExistsAsync(string selector)
     {
         try
