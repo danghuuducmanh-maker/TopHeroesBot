@@ -21,12 +21,11 @@ public class GiftModule : InteractionModuleBase<SocketInteractionContext>
 
         try
         {
+            await Context.Channel.SendMessageAsync("Bắt đầu thêm code:");
             var result = await _giftService.AddAsync(
             code,
             async message =>
             {
-                Console.WriteLine($"Discord message length = {message.Length}");
-
                 await Context.Channel.SendMessageAsync(message);
             });
 

@@ -26,6 +26,7 @@ public class RunModule : InteractionModuleBase<SocketInteractionContext>
 
         try
         {
+            await Context.Channel.SendMessageAsync("Bắt đầu chạy:");
             var success = await _accountService.RunAsync(
             uid,
             RunActionHelper.Build(action1, action2, action3),
@@ -68,6 +69,7 @@ public class RunModule : InteractionModuleBase<SocketInteractionContext>
 
         try
         {
+            await Context.Channel.SendMessageAsync("Bắt đầu chạy tất cả tài khoản:");
             await _accountService.RunAllAsync(
            RunActionHelper.Build(action1, action2, action3),
            async message =>

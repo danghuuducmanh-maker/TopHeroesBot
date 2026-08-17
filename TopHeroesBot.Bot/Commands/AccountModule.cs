@@ -21,7 +21,7 @@ public class AccountModule : InteractionModuleBase<SocketInteractionContext>
 
         try
         {
-            await Context.Channel.SendMessageAsync("Bắt đầu chạy:");
+            await Context.Channel.SendMessageAsync("Bắt đầu thêm tài khoản:");
             var result = await _accountService.AddAccountAsync(
                 uid,
                 async message =>
@@ -57,9 +57,7 @@ public class AccountModule : InteractionModuleBase<SocketInteractionContext>
         int success = 0;
         int failed = 0;
         await DeferAsync(ephemeral: true);
-
         
-
         try
         {
             if (!file.Filename.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
@@ -132,7 +130,7 @@ public class AccountModule : InteractionModuleBase<SocketInteractionContext>
 
         try
         {
-            await Context.Channel.SendMessageAsync("🚀 Bắt đầu thêm tài khoản...");
+            await Context.Channel.SendMessageAsync("🚀 Bắt đầu thêm danh sách tài khoản...");
 
             var uidList = uids
                 .Split(new[] { '\r', '\n', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)

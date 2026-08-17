@@ -38,38 +38,46 @@ public class AccountService : IAccountService
         await _accountRepository.AddAsync(account);
     }
     public async Task<AddAccountResult> AddAccountAsync(
-    string uid,
-    Func<string, Task>? notify = null)
+     string uid,
+     Func<string, Task>? notify = null)
     {
-        var context = await _executor.ExecuteAsync(
-            uid,
-            async ctx =>
-            {
-                await RunActions(
+        await _topHeroesClient.CreateBrowserAsync();
+
+        try
+        {
+            var context = await _executor.ExecuteAsync(
+                uid,
+                async ctx =>
+                {
+                    await RunActions(
                         ctx,
                         RunAction.Daily,
                         RunAction.Gold);
 
-                await SaveAccount(ctx.Profile, uid);
-            },
-    notify);
+                    await SaveAccount(ctx.Profile, uid);
+                },
+                notify);
 
-        if (context == null)
-        {
+            if (context == null)
+            {
+                return new AddAccountResult
+                {
+                    Success = false,
+                    Message = "Đăng nhập thất bại."
+                };
+            }
+
             return new AddAccountResult
             {
-                Success = false,
-                Message = "Đăng nhập thất bại."
+                Success = true,
+                Message = "Thêm tài khoản thành công."
             };
         }
-
-        return new AddAccountResult
+        finally
         {
-            Success = true,
-            Message = "Thêm tài khoản thành công."
-        };
+            await _topHeroesClient.CloseBrowserAsync();
+        }
     }
-
     public async Task<List<Account>> GetAllAsync()
     {
         return await _accountRepository.GetAllAsync();
